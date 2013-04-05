@@ -1,0 +1,74 @@
+<style type="text/css">
+* {margin:0;background:#fff;}
+body { 
+	padding: 40px; 
+	background: #eee; 
+	font-family: Arial; 
+	font-size: 16px; 
+	line-height: 18px; 
+	}
+	a { 
+	text-decoration: none;  
+	}
+h1 {
+	text-align:center;
+	}
+h2  { 
+	width:100%; 
+	text-align:center;
+	margin-top:32px;
+	}
+.button {
+	padding: 11px 21px 13px;
+	display:inline;
+	border: 2px solid #FFF;
+	
+	color: #fff;
+	cursor: pointer;
+	font-weight: bold;
+	text-shadow: 1px 1px #666;
+	
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+
+	box-shadow:inset 0px -4px 21px 0px #f0f0f0;
+	-moz-box-shadow:inset 0px -4px 21px 0px #f0f0f0;
+	-webkit-box-shadow:inset 0px -4px 21px 0px #f0f0f0;
+	box-shadow:0px 2px 21px 0px #3f3f3f;
+	-moz-box-shadow:0px 2px 21px 0px #3f3f3f;
+	-webkit-box-shadow: 0px 2px 21px 0px #3f3f3f;
+	
+	background-image:url('../images/redFlower.gif'); 
+	}
+	
+	
+.button:active  {/*
+	position: relative;
+	top: 6px;
+	text-shadow: 2px 2px #666;
+	padding: 10px 21px 10px;
+	vertical-align: center;
+
+	box-shadow:inset 0px 4px 21px 5px #e5e5e5;
+	-moz-box-shadow:inset 0px 4px 21px 5px #e5e5e5;
+	-webkit-box-shadow:inset 0px 4px 21px 5px #e5e5e5;
+
+	box-shadow: 0px 0px 21px 0px #3f3f3f;
+	-moz-box-shadow: 0px 0px 21px 0px #3f3f3f;
+	-webkit-box-shadow: 0px 0px 21px 0px #3f3f3f; */
+}
+/*
+	.blue	{ background-color: #56c6d9; }
+	.green	{ background-color: #99dc30; }
+	.orange	{ background-color: #ffd22e; }
+	.violet	{ background-color: #c5b8f6; }
+	.pink	{ background-color: #fe2192; }
+*//*
+	.blue	{ background-color: #56c6d9; background-image:url('../images/redButton.gif'); } 
+	.green	{ background-color: #99dc30; }
+	.orange	{ background-color: #ffd22e; }
+	.violet	{ background-color: #c5b8f6; }
+	.pink	{ background-color: #fe2192; }
+*/
+</style>

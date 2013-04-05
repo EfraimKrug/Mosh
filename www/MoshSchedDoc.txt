@@ -1,0 +1,45 @@
+METAPHORE:
+	Planting a garder....
+		Committment = 1 flower
+		Dates - the field
+		Moshgiach - gardner...
+	
+PAGE:	OPENING: 	EMPTY FIELD WITH STRAY FLOWERS IN POTS & PACKAGES OF SEEDS...
+		
+	1)	List event dates (empty plowed field)
+		Click on event date (deciding on nice spot...)
+			Available Moshgichim, if not committed (spot & gardener!)
+			or committed moshgiach
+
+		1a)	Available Moshgichim - 
+				Click on mosghgiach 
+					confirmation (assign moshgiach?)
+					no - cancel
+					yes - confirmation (EMAIL moshgiach?)
+						no - assign moshgiach/no email
+						yes - assign mosghgiach/send email
+
+
+	2)	List of Moshgichim
+	Options: 
+		Add moshgiach (menu)
+		Delete moshgiach (menu/rightClick/doubleClick)
+		Edit name/email (menu/rightClick/doubleClick)
+
+		2a)	Click on Moshgiach:
+				Events scheduled for that moshgiach
+					Click on event 
+						Event/Date/Meal/Moshgiach - change moshgiach box
+									  - delete event button
+
+
+	3)	List of committments
+	Option:
+		Add committment (menu0
+		Delete committment  (menu/rightClick/doubleClick)
+		Edit committment  (menu/rightClick/doubleClick)
+
+		3a)	Click on commmittment:
+				DateEdit
+				Moshgiach List - change moshgiach box
+					- delete committment button					

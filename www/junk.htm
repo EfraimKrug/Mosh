@@ -1,0 +1,342 @@
+<html><head></head><body><ww**?php
+<br>
+<br>include 'GenFileParts.php';
+<br>include 'DB2.php';
+<br>
+<br>/*
+<br> * Command Object - accessed from Navigation Object
+<br> * Navigation thru pages - every page implements IPage
+<br> * PageChain is an array of IPage objects
+<br> */
+<br> 
+<br>interface IPage
+<br>{
+<br>  function nextPage( $name, $args );
+<br>}
+<br>
+<br>/*
+<br> * PageChain - array of pages theoretically allowing forward
+<br> * and backward navigation - but in this case there are browser
+<br> * buttons for that - so it is overkill... but what the heck!
+<br> *
+<br> */
+<br>class PageChain
+<br>{
+<br>  private $_pages = array();
+<br>
+<br>  /*
+<br>  * Add a page to the PageChain - this is necessary
+<br>  * for every page before the pages can be loaded
+<br>  */
+<br>  public function addPage( $pageName )
+<br>  {
+<br>    $this->_pages []= $pageName;
+<br>  }
+<br>
+<br>  /*
+<br>  * Retrieve the page... 
+<br>  */
+<br>  public function getPage( $name, $args )
+<br>  {
+<br>    foreach( $this->_pages as $pageName )
+<br>    {
+<br>      if ( $pageName->nextPage( $name, $args ) )
+<br>        return;
+<br>    }
+<br>  }
+<br>}
+<br>/*
+<br> * Each page needs an object - same name as the page - 
+<br> * the object will do the database access (if necessary)
+<br> * and return a record set - either one row, multiple
+<br> * rows or empty... 
+<br> * This object then writes out the html for the section of
+<br> * the page requiring database access.
+<br> * @param $args - empty here
+<br> */
+<br>class AboutNowDB implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'AboutNowDB' ) return false;
+<br>	GenerateTop();
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rs = $dbObj->getList("SD");
+<br>
+<br>	while($row = mysql_fetch_array($rs))
+<br>		{
+<br>		echo "<ww**a href='Navigator.php?page=GetDate&SdKey=" . $row['SdKey'] . "'>" . $row['SdDate'] . " " . $row['SdMeal'] . "<ww**/a><ww**br>";
+<br>		}	
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>  }
+<br>}
+<br>
+<br>/*
+<br> * GetDate - gets individual date given the date and meal
+<br> * @param $args - 0- date/ 1-meal
+<br> */
+<br>class GetDate implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'GetDate' ) return false;
+<br>	GenerateTop();
+<br>	$SdKey = $args[0];
+<br>	$sw=0;
+<br>	$sql = "SELECT m.MoFName, m.MoLName, m.MoEMail, s.SdDate, s.SdMeal " . 
+<br>			"FROM Moshgiach m, SchedDate s, Commit c " .
+<br>			"WHERE  m.MoKey = c.CoMoKey AND s.SdKey = c.CoSdKey;";
+<br>			
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rsDate = $dbObj->getDateByKey($SdKey);
+<br>	$rowDate = mysql_fetch_array($rsDate);
+<br>	$SdDate = $rowDate['SdDate'];
+<br>	$SdMeal = $rowDate['SdMeal'];
+<br>
+<br>	$sqlEmptyDates = "SELECT * FROM SchedDate WHERE " .
+<br>						"SdDate = '" . $SdDate . "' AND SdMeal = '" . $SdMeal . "' AND " .
+<br>						"SdKey NOT IN ( " .
+<br>						"SELECT CoSdKey FROM Commit);";
+<br>						
+<br>	$rs = $dbObj->getListbyDateMeal($SdDate, $SdMeal);
+<br>	while($row = mysql_fetch_array($rs))
+<br>	{
+<br>	
+<br>	echo "<ww**a href='Navigator.php?page=EditCommit&CoSdKey=" . $row['CoSdKey'] . "&CoMoKey=" . $row['CoMoKey'] . "'>" . $SdDate . "(" . $SdMeal . ") Hashgacha by: " . $row['MoFName'] . " " . $row['MoLName'] . "<ww**/a><ww**br>";	
+<br>//	echo "<ww**a href='EditCommit.php?CoSdKey=" . $row['CoSdKey'] . "&CoMoKey=" . $row['CoMoKey'] . "'>" . $SdDate . "(" . $SdMeal . ") Hashgacha by: " . $row['MoFName'] . " " . $row['MoLName'] . "<ww**/a><ww**br>";	
+<br>	$sw++;
+<br>	}
+<br>	$rsEmptyDates = $dbObj->getManyRows($sqlEmptyDates);
+<br>	while($ERow = mysql_fetch_array($rsEmptyDates))
+<br>	{
+<br>	echo "<ww**a href='AddCommit.php?SdKey=" . $ERow['SdKey'] . "'>" . $SdDate . "(" . $SdMeal . ") No Hashgacha <ww**/a><ww**br>";	
+<br>	$sw++;
+<br>	}
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>class EditCommit implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'EditCommit' ) return false;
+<br>	GenerateTop();
+<br>
+<br>	$CoMoKey = $args[1];
+<br>	$CoSdKey = $args[0];
+<br>
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$commitRS = $dbObj->getCommitByKey($CoSdKey, $CoMoKey);
+<br>
+<br>	$row = mysql_fetch_array($commitRS);
+<br>	$CoMeal = $row['CoMeal'];
+<br>	$CoDate = $row['CoDate'];
+<br>
+<br>	$moshgiachRS = $dbObj->getMoshgiachByKey($CoMoKey);
+<br>	$countResult = mysql_num_rows($moshgiachRS);
+<br>
+<br>	if($countResult > 0){
+<br>		$row = mysql_fetch_array($moshgiachRS);
+<br>		$MoFName = $row['MoFName'];
+<br>		$MoLName = $row['MoLName'];
+<br>		$MoEMail = $row['MoEMail'];
+<br>		$MoKey = $row['MoKey'];		
+<br>		
+<br>		echo "<ww**form action=\"../Navigator.php?page=InsertCommit\" method=\"post\">";
+<br>		echo "First Name: <ww**input type=\"text\" name=\"fname\" value=" . $MoFName . "><ww**br>";
+<br>		echo "Last Name: <ww**input type=\"text\" name=\"lname\"  value=" . $MoLName . "><ww**br>";
+<br>		echo "Date: " . $CoDate . "<ww**br>";
+<br>		echo "Meal: " . $CoMeal . "<ww**br>";
+<br>		echo "<ww**input type=\"hidden\" name=\"date\" value=\"$CoDate\">";
+<br>		echo "<ww**input type=\"hidden\" name=\"meal\" value=\"$CoMeal\">";
+<br>		echo "<ww**input type=\"hidden\" name=\"SdKey\" value=\"$CoSdKey\">";
+<br>		echo "<ww**input type=\"hidden\" name=\"MoKey\" value=\"$MoKey\">";
+<br>		echo "<ww**input type=\"submit\">";
+<br>		echo "<ww**/form>";
+<br>		}
+<br>	else {
+<br>		echo "Still not committed!";
+<br>		}
+<br>	
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>class InsertCommit implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'InsertCommit' ) return false;
+<br>	GenerateTop();
+<br>	$oldDate = $args[0];
+<br>	$oldMeal = $args[1];
+<br>	$oldFName = $args[2];
+<br>	$oldLName = $args[3];
+<br>	$oldSDKey = $args[4];
+<br>	$oldMOKey = $args[5];
+<br>
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$commitRS = $dbObj->getCommitByKey($oldSDKey, $oldMOKey);
+<br>
+<br>	$moshgiachRS = $dbObj->getMoshgiachByKey($oldMOKey);
+<br>		//$sqlAddDate = "INSERT INTO SchedDate (SdDate, SdMeal) VALUES ('$oldDate', '$oldMeal')";
+<br>		//$sqlSelectMoshgiach = "Select * FROM Moshgiach WHERE MoFName = \"" . $oldFName . "\" AND MoLName = \"" . $oldLName . "\"";
+<br>
+<br>		/* Business Logic: Deal with date/ if none - update the date table */
+<br>		$resultDate = $dbObj->getDateByDateMeal($oldDate, $oldMeal);
+<br>		$countDate = $dbObj->getCount($resultDate);
+<br>		if($countDate <ww** 1){
+<br>			$dbObj->insertDate($oldDate, $oldMeal);
+<br>			/* find the assigned date key */
+<br>			$resultDate = $dbObj->getDateByDateMeal($oldDate, $oldMeal);
+<br>			}
+<br>		echo "<ww**br>Processing moshgiach...";
+<br>		/* Business Logic: Deal with moshgiach / if none - crash and burn */
+<br>		$resultMoshgiach = $dbObj->getMoshgiachByName($oldFName, $oldLName);
+<br>		$countMoshgiach = $dbObj->getCount($resultMoshgiach);
+<br>		if($countMoshgiach <ww** 1){
+<br>			echo "Please enter the moshgiach first...";
+<br>			//echo $countMoshgiach;
+<br>			
+<br>			//header('Location: ./AddMoshgiach.php');
+<br>			}
+<br>		else {
+<br>			$row = $dbObj->getNextArray($resultMoshgiach);
+<br>			$mKey = $row['MoKey'];
+<br>			$fn = $row['MoFName'];
+<br>
+<br>			$row = $dbObj->getNextArray($resultDate);
+<br>			$dKey = $row['SdKey'];
+<br>			//only one commit per date/meal row
+<br>			$dbObj->deleteCommit($oldSDKey);
+<br>			$dbObj->insertCommit($oldDate, $oldMeal, $oldMOKey, $oldSDKey);
+<br>			}
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>
+<br>class ListMoshgichim implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'ListMoshgichim' ) return false;
+<br>	GenerateTop();
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rs = $dbObj->getList("M");
+<br>	echo "<ww**table>";
+<br>	$i = 0;
+<br>	while($row = mysql_fetch_array($rs))
+<br>		{
+<br>		if($i==0){
+<br>			echo "<ww**tr>";
+<br>			}
+<br>		$j = $i % 2;
+<br>		if(($i>0)&&($j<ww**1)){
+<br>			echo "<ww**/tr><ww**tr>";
+<br>			}
+<br>		$em = $row['MoEMail'];
+<br>		echo "<ww**td><ww**a href='Navigator.php?page=GetMoshgiach&MoKey=" . 
+<br>				$row['MoKey'] . "'><ww**p class=\"footerChange\" onMouseOver=displayFooter('$em') onMouseOut=clearFooter()>" .
+<br>				$row['MoFName'] . " " . $row['MoLName'] . "<ww**/p><ww**/a><ww**/td>";
+<br>		$i++;
+<br>		}
+<br>	echo "<ww**/tr><ww**/table>";	
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>class ListCommit implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'ListCommit' ) return false;
+<br>	GenerateTop();
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rs = $dbObj->getList("C");
+<br>
+<br>		while($row = mysql_fetch_array($rs))
+<br>			{
+<br>			$dt = $row['CoDate'];
+<br>			$ml = $row['CoMeal'];
+<br>			$ky = $row['CoMoKey'];
+<br>			$sdKy = $row['CoSdKey'];
+<br>			$mo = $row['MoFName'] . " " . $row['MoLName'];
+<br>			echo "<ww**a href='Navigator.php?page=GetDate&SdKey=" . $sdKy . "'>" . $dt . " " . $ml . " [" . $mo . "]<ww**/a>";
+<br>			echo "<ww**br>";
+<br>			}
+<br>			
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>class GetMoshgiach implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'GetMoshgiach' ) return false;
+<br>	GenerateTop();
+<br>	$mKey = $args[0]; 
+<br>
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$resultSet = $dbObj->getMoshgiachByKey($mKey);
+<br>
+<br>	echo "<ww**a href=\"DeleteMoshgiach.php?MoKey=" . $mKey . "\"><ww**input type=\"submit\" value=\"Delete?\"/><ww**/a>";
+<br>	echo "<ww**a href=\"EditMoshgiach.php?MoKey=" . $mKey . "\"><ww**input type=\"submit\" value=\"Edit?\"/><ww**/a><ww**br><ww**br>";
+<br>
+<br>	while($row = mysql_fetch_array($resultSet))
+<br>		{
+<br>		echo $row['MoFName'] . " " . $row['MoLName'] . " [" . $row['MoEMail'] . "]";
+<br>		echo "<ww**br>";
+<br>		}
+<br>
+<br>	//Set up the query
+<br>	$commitRS = $dbObj->getCommitByMoKey($mKey);
+<br>
+<br>	while($row = mysql_fetch_array($commitRS))
+<br>		{
+<br>		echo $row['CoDate'] . " " . $row['CoMeal'];
+<br>		echo "<ww**br>";
+<br>		}
+<br>	
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>class AddDate implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'AddDate' ) return false;
+<br>	GenerateTop();
+<br>
+<br>	echo "<ww**form action=\"../InsertDate.php\" method=\"post\">";
+<br>	echo "New Date (ccyy-mm-dd): <ww**input type=\"text\" name=\"date\"><ww**br>";
+<br>	echo "Meal: <ww**input type=\"text\" name=\"meal\"><ww**br>";
+<br>	echo "Moshgiach First Name (or blank): <ww**input type=\"text\" name=\"fname\"><ww**br>";
+<br>	echo "Moshgiach Last Name (or blank): <ww**input type=\"text\" name=\"lname\"><ww**br>";
+<br>	echo "<ww**input type=\"submit\">";
+<br>	echo "<ww**/form>";
+<br>
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>?>
+<br><br></body></html>

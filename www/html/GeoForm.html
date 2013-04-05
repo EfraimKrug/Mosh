@@ -1,0 +1,104 @@
+<!DOCTYPE html> 
+<html>  
+  <head>
+    <title>Weekly hours keeper</title>
+    <script src="http://www.google.com/jsapi"></script>
+    <script>
+      google.load("jquery", "1.4.1");
+    </script>
+    <script>
+      var db = window.openDatabase("scores", "", "Previous Scores", 1024*1000);
+
+      function insertScore(hole_num, num_strokes, course_id, email) {
+       db.transaction(function(tx) {
+          tx.executeSql('INSERT INTO Strokes (course_id, hole_num, num_strokes, email) VALUES (?, ?, ?, ?)', [course_id, hole_num, num_strokes, email]);
+       });
+      }
+
+      function renderResults(tx, rs) {
+        e = $('#previous_scores');
+        e.html("");
+        for(var i=0; i < rs.rows.length; i++) {
+          r = rs.rows.item(i);
+          e.html(e.html() + 'id: ' + r['id'] + ', hole_num: ' + r['hole_num'] + ', num_strokes: ' + r['num_strokes'] + ', email: ' + r['email'] + '<br />');
+        }
+      }
+
+      function renderScores(email) {
+        db.transaction(function(tx) {
+          if (!(email === undefined)) {
+            tx.executeSql('SELECT * FROM Strokes WHERE email = ?', [email], renderResults);
+          } else {
+            tx.executeSql('SELECT * FROM Strokes', [], renderResults);
+          }
+        });
+      }
+
+      $(document).ready(function() {
+        db.transaction(function(tx) {
+          tx.executeSql('CREATE TABLE IF NOT EXISTS Courses(id INTEGER PRIMARY KEY, name TEXT, latitude FLOAT, longitude FLOAT)', []);
+          tx.executeSql('CREATE TABLE IF NOT EXISTS Strokes(id INTEGER PRIMARY KEY, course_id INTEGER, hole_num INTEGER, num_strokes INTEGER, email TEXT)', []);
+        });
+
+        $('#score_form').submit(function() {
+         strokes = { 1: $('#hole1').val(), 2: $('#hole2').val() };
+          for (var hole_num in strokes) {
+            insertScore(hole_num, strokes[hole_num], 1, $('#email').val());
+          }
+
+          renderScores();
+          return false;
+        });
+
+        $('#filter_previous_scores_form').submit(function() {
+          e = $('#filter_by_email').val();
+          renderScores(e);
+          return false;
+        });
+
+        renderScores();
+      });
+    </script>
+  </head>
+  <body>
+    <form method="get" id="score_form">
+      <div>
+        <label for="1">Hole 1</label>
+        <input type="number" min="1" value="4" id="hole1" name="hole1" size="2" step="1" />
+      </div>
+      <div>
+        <label for="2">Hole 2</label>
+        <input type="number" min="1" value="4" id="hole1" name="hole2" size="2" step="1" />
+      </div>
+      <div>
+        <input type="email" id="email" placeholder="Enter your email address" size="40"/>
+      </div>
+	  <div>
+        <input type="text" id="lat_field" name="latitude" />
+        <input type="text" id="long_field" name="longitude" />
+      </div>
+      <script>
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            $("#lat_field").val(pos.coords.latitude);
+            $("#long_field").val(pos.coords.longitude);
+          }
+        );
+      </script>
+      <div>
+        <input type="submit" value="Upload Score" />
+      </div>
+    </form>
+    <div>
+      <h2>Previous Scores</h2>
+      <form id="filter_previous_scores_form">
+        <input type="email" placeholder="Filter scores by email" size="40" id="filter_by_email" /><br />
+        <input type="submit" value="Filter" />
+      </form>
+    </div>
+    <div id="previous_scores">
+
+    </div>
+  </body>
+</html> 
+

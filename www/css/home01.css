@@ -1,0 +1,33 @@
+#banner		{
+	height: 5%;
+	}
+#top		{
+	height: 5%;
+	}
+#bottom		{
+	height:	5%;
+	}
+#footer		{
+	height:	5%;
+}	
+
+#_middle		{
+	left:125px;
+	}
+	
+#rightSide	{
+	top:125px;
+	left:350px;
+	background-color:blue;
+	/* height:50%; */
+	/*background-image:url('../images/homeBackground.gif');*/
+	//background-image:url('../images/redFlower.gif');
+	background-repeat:no-repeat;
+	}
+
+#leftSide 	{
+	top:125px;
+	left:75px;
+	background-color:blue;
+	/* height:50%; */
+	}

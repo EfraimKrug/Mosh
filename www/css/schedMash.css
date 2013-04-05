@@ -1,0 +1,136 @@
+body {
+		font-family:arial,helvetica,sans-serif;
+		font-size:22px;
+		background-color:black;
+	}
+
+	p {
+		font-size:12px;
+		padding:1px;
+		margin:1px;
+		border:2px solid black;
+		vertical-align:text-top;
+	}
+		
+	#wrapper {
+		width:900px;
+		margin:0px auto;
+		border:1px solid #bbb;
+		padding:10px;
+		background-color:black;
+	}
+
+	.column {
+		border:0px solid #000;
+		height:30px;
+		padding:5px;
+		text-align:center;
+	}
+
+	.container {
+		border:0px solid #fff;
+		height:40px;
+		padding:5px;
+		text-align:center;
+	}
+
+	#header {
+		border:0px solid #bbb;
+		height:80px;
+		padding:10px;
+		text-align:center;
+	}
+	
+	.ball1 {
+	background:#98bf21;
+	height:10px;
+	width:10px;
+	position:absolute;
+	opacity:0;
+	border:2px solid red;
+	}
+
+.ball2 {
+	background:#FE2192;
+	height:10px;
+	width:10px;
+	position:absolute;
+	opacity:0;
+	border:2px solid blue;
+	}
+	
+.ball3 {
+	background:#56c6d9;
+	height:10px;
+	width:10px;
+	position:absolute;
+	opacity:0;
+	border:2px solid black;
+	}
+	
+	#content {
+		margin-top:10px;
+		padding-bottom:10px;
+	}
+	#content div {
+		padding:10px;
+		border:0px solid #bbb;
+		float:left;
+	}
+	#contentLeft {
+		width:180px;
+		z-index:5;
+		background-color:black;
+	}
+	#contentMain {
+		margin-left:10px;
+		width:500px;
+		color:white;
+		background-color:lightblue;
+		background-image:url('../images/homeBackground.gif');
+		background-repeat:no-repeat;
+		height:300px;	
+	}
+	#contentRight {
+		margin-left:10px;
+		width:134px;
+		height:300px;
+		border:4px solid red;
+		background-color:#85a7c3;
+		color:yellow;
+	}
+	
+	#dropImage {
+		position:relative;
+		margin-left:10px;
+		margin-top:10px;
+		}
+		
+	#footer {
+		float:left;
+		margin-top:10px;
+		margin-bottom:10px;
+		padding:10px;
+		border:0px solid #bbb;
+		color:white;
+		width:878px;
+	}
+	#bottom {
+		clear:both;
+		text-align:right;
+		color:white;
+	}
+	
+	#MoveAround {
+		left:459px;
+		top:385px;
+		width:25px;
+		height:25px;
+/*		border:2px solid red;
+		background-color:yellow; */
+		text-align:center;
+		vertical-align:middle;
+		position:absolute;
+		z-index:10;
+		opacity:0;
+		}

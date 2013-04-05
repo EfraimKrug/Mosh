@@ -1,0 +1,16 @@
+<html>
+<head>
+</head>
+<body>
+<div id=wholeThing>
+<div id=header>
+</div><!-- header -->
+<div id=leftCol>
+</div><!-- leftCol -->
+<div id=rightCol>
+</div><!-- rightCol -->
+<div id=footer>
+</div><!-- footer -->
+</div><!-- wholeThing -->
+</body>
+</html>

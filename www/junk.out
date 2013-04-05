@@ -1,0 +1,143 @@
+<html><head></head><body><?php
+<br>
+<br>include 'GenFileParts.php';
+<br>include 'DB2.php';
+<br>
+<br>/*
+<br> * Command Object - accessed from Navigation Object
+<br> * Navigation thru pages - every page implements IPage
+<br> * PageChain is an array of IPage objects
+<br> */
+<br> 
+<br>interface IPage
+<br>{
+<br>  function nextPage( $name, $args );
+<br>}
+<br>
+<br>/*
+<br> * PageChain - array of pages theoretically allowing forward
+<br> * and backward navigation - but in this case there are browser
+<br> * buttons for that - so it is overkill... but what the heck!
+<br> *
+<br> */
+<br>class PageChain
+<br>{
+<br>  private $_pages = array();
+<br>
+<br>  /*
+<br>  * Add a page to the PageChain - this is necessary
+<br>  * for every page before the pages can be loaded
+<br>  */
+<br>  public function addPage( $pageName )
+<br>  {
+<br>    $this->_pages []= $pageName;
+<br>  }
+<br>
+<br>  /*
+<br>  * Retrieve the page... 
+<br>  */
+<br>  public function getPage( $name, $args )
+<br>  {
+<br>    foreach( $this->_pages as $pageName )
+<br>    {
+<br>      if ( $pageName->nextPage( $name, $args ) )
+<br>        return;
+<br>    }
+<br>  }
+<br>}
+<br>/*
+<br> * Each page needs an object - same name as the page - 
+<br> * the object will do the database access (if necessary)
+<br> * and return a record set - either one row, multiple
+<br> * rows or empty... 
+<br> * This object then writes out the html for the section of
+<br> * the page requiring database access.
+<br> * @param $args - empty here
+<br> */
+<br>class AboutNowDB implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'AboutNowDB' ) return false;
+<br>	GenerateTop();
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rs = $dbObj->getListSchedDate();
+<br>
+<br>	while($row = mysql_fetch_array($rs))
+<br>		{
+<br>		//echo "<a href='GetDate.php?param=SdDate>" . $row['SdDate'] . "|SdMeal>" . $row['SdMeal'] . "'>" . $row['SdDate'] . " " . $row['SdMeal'] . "</a><br>";
+<br>		echo "<a href='Navigator.php?page=GetDate&SdDate=" . $row['SdDate'] . "&SdMeal=" . $row['SdMeal'] . "'>" . $row['SdDate'] . " " . $row['SdMeal'] . "</a><br>";
+<br>		}	
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>  }
+<br>}
+<br>
+<br>/*
+<br> * GetDate - gets individual date given the date and meal
+<br> * @param $args - 0- date/ 1-meal
+<br> */
+<br>class GetDate implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'GetDate' ) return false;
+<br>	GenerateTop();
+<br>	$SdDate = $args[0];
+<br>	$SdMeal = $args[1];
+<br>	$sw=0;
+<br>	$sql = "SELECT m.MoFName, m.MoLName, m.MoEMail, s.SdDate, s.SdMeal " . 
+<br>			"FROM Moshgiach m, SchedDate s, Commit c " .
+<br>			"WHERE  m.MoKey = c.CoMoKey AND s.SdKey = c.CoSdKey;";
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rs = $dbObj->getListbyDateMeal($SdDate, $SdMeal);
+<br>	while($row = mysql_fetch_array($rs))
+<br>	{
+<br>	echo "<a href='EditCommit.php?CoSdKey=" . $row['CoSdKey'] . "&CoMoKey=" . $row['CoMoKey'] . "'>" . $SdDate . "(" . $SdMeal . ") Hashgacha by: " . $row['MoFName'] . " " . $row['MoLName'] . "</a>";	
+<br>	$sw++;
+<br>	}
+<br>	if($sw < 1){
+<br>		echo "There is no commit for this date...";
+<br>		}
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>
+<br>class ListMoshgichim implements IPage
+<br>{
+<br>  public function nextPage( $name, $args )
+<br>  {
+<br>    if ( $name != 'ListMoshgichim' ) return false;
+<br>	GenerateTop();
+<br>	$sw=0;
+<br>	$sql = "SELECT * FROM Moshgiach";
+<br>	$dbObj = DataBase_Object_Factory::getFactory()->getDataBase_Access();
+<br>	$rs = $dbObj->getManyRows($sql);
+<br>	echo "<table>";
+<br>	$i = 0;
+<br>	while($row = mysql_fetch_array($rs))
+<br>		{
+<br>		if($i==0){
+<br>			echo "<tr>";
+<br>			}
+<br>		$j = $i % 2;
+<br>		if(($i>0)&&($j<1)){
+<br>			echo "</tr><tr>";
+<br>			}
+<br>		$em = $row['MoEMail'];
+<br>		echo "<td><a href=\"./GetMoshgiach.php?MoKey=" . 
+<br>				$row['MoKey'] . "\" ><p class=\"footerChange\" onMouseOver=displayFooter('$em') onMouseOut=clearFooter()>" .
+<br>				$row['MoFName'] . " " . $row['MoLName'] . "</p></a></td>";
+<br>		$i++;
+<br>		}
+<br>	echo "</tr></table>";	
+<br>	$dbObj->close_DataBase();
+<br>	GenerateBottom();    
+<br>	return true;
+<br>	}
+<br>}
+<br>?>
+<br><br></body></html>
